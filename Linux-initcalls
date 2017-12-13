@@ -28,6 +28,49 @@ order as can be seen below in the snippet from the ARM linker script.
 +         *(.initcall7.init)
 +      __initcall_end = .;
 
++Initialization Levels
++---------------------
+
++core -- Level 1
++```````````````
++	Used for core kernel services and for some early arch/driver
++	specific initialization that do not depend on any kernel core
++	initialization.
+
++postcore -- Level 2
++```````````````````
++	Initialization of functions that depend on core initialization and
++	that do not fall into the other categories.
+
++arch -- Level 3
++```````````````
++	Used for architecture specific initialization (i386, ARM, Mips,
++	etc.).
+
++subsys -- Level 4
++`````````````````
++	Used to initialize kernel subsystems.
+
++fs -- Level 5
++`````````````
++	describe level
+
++device -- Level 6
++`````````````````
++	Device initialization.
+
++late -- Level 7
++```````````````
++	describe level
+
++console
++```````
++	Console specific initialization.
+
++security
++````````
++	Security specific initialization.
+
 They determine the initialization order of built-in modules
 Drivers will use device_initcall (or module_init; see below) most of the time.
 Early initialization (early_initcall) is normally used by architecture-specific code to initialize hardware subsystems (power management, DMAs, etc.) before any real driver gets initialized.
