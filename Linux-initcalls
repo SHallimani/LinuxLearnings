@@ -1,3 +1,33 @@
+2.6 improves the initialization process by adding a coarse order to the
+initialization sequence. 2.6 defines 7 levels of initialization plus
+application specific initialization sections (e.g. console and
+security).  The definition of these levels of initialization can be
+found in include/linux/init.h. The 2.4 macro __initcall still exists but
+is re-mapped to the device initialization level. Function calls within a
+level are still relegated to link order.
++
++   * core_initcall
++   * postcore_initcall
++   * arch_initcall
++   * subsys_initcall
++   * fs_initcall
++   * device_initcall
++   * late_initcall
+
+Each named initialization section is transformed into a numbered .text
+section.  These sections are then linked into the kernel in numeric
+order as can be seen below in the snippet from the ARM linker script.
++
++      __initcall_start = .;
++         *(.initcall1.init)
++         *(.initcall2.init)
++         *(.initcall3.init)
++         *(.initcall4.init)
++         *(.initcall5.init)
++         *(.initcall6.init)
++         *(.initcall7.init)
++      __initcall_end = .;
+
 They determine the initialization order of built-in modules
 Drivers will use device_initcall (or module_init; see below) most of the time.
 Early initialization (early_initcall) is normally used by architecture-specific code to initialize hardware subsystems (power management, DMAs, etc.) before any real driver gets initialized.
