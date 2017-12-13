@@ -1,0 +1,25 @@
+In older Linux version's the device firmware binary file is used to link it statically in a header file.
+which has some political and techinical issues
+      -> restriction's with Linux
+      -> Firmware occupies memory memory permanently, even though it often is just used once
+      -> in between we can't change the firmware Binary Image file dynamically
+
+So Linux came up with new firmware framework in Kernel module, by which the above techinical issues are resolved
+
+High level behavior :
+=====================
+      -> Kernel Driver layer
+            - request_firmware(fw, name, dev)
+                 + fw: pointer to firmware image
+                    fw will be used to return a firmware image by the name of @name for device @device
+                 + name: name of firmware file
+                    kernel searches the firmware image with name $name directly in the below root file-system path
+                       -> "/lib/firmware/updates/" UTS_RELEASE,
+                       -> "/lib/firmware/updates",
+                       -> "/lib/firmware/" UTS_RELEASE,
+                       -> "/lib/firmware"
+                 + dev: device for which firmware is being loaded
+                 
+      Should be called from user context where sleeping is allowed
+              
+              
