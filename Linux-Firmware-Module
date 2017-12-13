@@ -14,9 +14,9 @@ High level behavior :
                     fw will be used to return a firmware image by the name of @name for device @device
                  + name: name of firmware file
                     kernel searches the firmware image with name $name directly in the below root file-system path
-                       -> "/lib/firmware/updates/" UTS_RELEASE,
-                       -> "/lib/firmware/updates",
-                       -> "/lib/firmware/" UTS_RELEASE,
+                       -> "/lib/firmware/updates/"
+                       -> "/lib/firmware/updates"
+                       -> "/lib/firmware/"
                        -> "/lib/firmware"
                  + dev: device for which firmware is being loaded
                  
