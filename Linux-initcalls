@@ -75,9 +75,16 @@ static void __init do_initcalls(void)
         do_initcall_level(level);
 }
 
-You can see the names above with their associated index: early is 0, core is 1, etc. Each of those __initcall*_start entries point to an array of function pointers which get called one after the other. Those function pointers are the actual modules and built-in initialization functions, the ones you specify with module_init, early_initcall, etc.
+You can see the names above with their associated index: early is 0, core is 1, etc...
+Each of those __initcall*_start entries point to an array of function pointers which get called one after the other.
+Those function pointers are the actual modules and built-in initialization functions, the ones you specify with
+     -> module_init
+     -> early_initcall
+     -> etc...
 
-What determines which function pointer gets into which __initcall*_start array? The linker does this, using hints from the module_init and *_initcall macros. Those macros, for built-in modules, assign the function pointers to a specific ELF section.
+What determines which function pointer gets into which __initcall*_start array?
+The linker does this, using hints from the module_init and *_initcall macros.
+Those macros, for built-in modules, assign the function pointers to a specific ELF section.
 
 Example with module_init
 Considering a built-in module (configured with y in .config), module_init simply expands like this (include/linux/init.h):
