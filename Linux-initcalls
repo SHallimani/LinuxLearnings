@@ -1,7 +1,12 @@
-They determine the initialization order of built-in modules. Drivers will use device_initcall (or module_init; see below) most of the time. Early initialization (early_initcall) is normally used by architecture-specific code to initialize hardware subsystems (power management, DMAs, etc.) before any real driver gets initialized.
+They determine the initialization order of built-in modules
+Drivers will use device_initcall (or module_init; see below) most of the time.
+Early initialization (early_initcall) is normally used by architecture-specific code to initialize hardware subsystems (power management, DMAs, etc.) before any real driver gets initialized.
 
 Technical stuff for understanding below
-Look at init/main.c. After a few architecture-specific initialization done by code in arch/<arch>/boot and arch/<arch>/kernel, the portable start_kernel function will be called. Eventually, in the same file, do_basic_setup is called:
+Look at init/main.c
+
+After a few architecture-specific initialization done by code in arch/<arch>/boot and arch/<arch>/kernel,
+the portable start_kernel function will be called. Eventually, in the same file, do_basic_setup is called:
 
 /*
  * Ok, the machine is now initialized. None of the devices
