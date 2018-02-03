@@ -1,43 +1,43 @@
-How to get the process current priority assigned
+Below script lists the current running process in the system
 
 The below script current running application process id
 --------------------------------------------------------
-for p in /proc/[0-9] /proc/[0-9][0-9] /proc/[0-9][0-9][0-9] /proc/[0-9][0-9][0-9][0-9]
+for list in /proc/[0-9] /proc/[0-9][0-9] /proc/[0-9][0-9][0-9] /proc/[0-9][0-9][0-9][0-9]
 do
-       PID=$(basename $p)
+       PID=$(basename $list)
        echo "PID: $PID"
 done
 
 The below script print the process priority
 -------------------------------------------
-for p in /proc/[0-9] /proc/[0-9][0-9] /proc/[0-9][0-9][0-9] /proc/[0-9][0-9][0-9][0-9]
+get_policy() {
+        case $_POLICY in
+        "0")
+                APP_POLICY="< TS >"
+                ;;
+        "1")
+                APP_POLICY="< FF >"
+                ;;
+        "2")
+                APP_POLICY="< RR >"
+                ;;
+        *)
+                APP_POLICY="< ?? >"
+        esac
+}
+
+for list in /proc/[0-9] /proc/[0-9][0-9] /proc/[0-9][0-9][0-9] /proc/[0-9][0-9][0-9][0-9]
 do
-       PID=$(basename $p)
+       PID=$(basename $list)
        read _PID _COMM _STATE _PPID _PGRP _SESSION _TTY_NR _TPGID _FLAGS _MINFLT _CMINFLT _MAJFLT \
-	     _CMAJFLT _UTIME _STIME _CUTIME _CSTIME _PRIORITY _NICE _NUM_THREADS _IRETVALUE \
-	     _STARTTIME _VSIZE _RSS _RSSLIM _STARTCODE _ENDCODE _STARTSTACK _KSTKESP _KSTKEIP \
-	     _SIGNAL _BLOCKED _SIGIGNORE _SIGCATCH _WCHAN _NSWAP _CNSWAP _EXIT_SIGNAL _PROCESSOR \
-	     _RT_PRIORITY _POLICY _JUNK < /proc/$PID/stat
-       
-       # Decode policy and priority
-	case $_POLICY in
-	"0")
-		POLICY="TS"
-		RTPRIO="- "
-		;;
-	"1")
-		POLICY="FF"
-		RTPRIO=$_RT_PRIORITY
-		;;
-	"2")
-		POLICY="RR"
-		RTPRIO=$_RT_PRIORITY
-		;;
-	*)
-		POLICY="??"
-		RTPRIO="- "
-	esac
-  
-  read _WCHAN < /proc/$PID_TO_SHOW/wchan
-  echo -e "$PID\t$TID\t$POLICY\t$RTPRIO\t$_STATE\t$_COMM\t$_WCHAN"
+             _CMAJFLT _UTIME _STIME _CUTIME _CSTIME _PRIORITY _NICE _NUM_THREADS _IRETVALUE \
+             _STARTTIME _VSIZE _RSS _RSSLIM _STARTCODE _ENDCODE _STARTSTACK _KSTKESP _KSTKEIP \
+             _SIGNAL _BLOCKED _SIGIGNORE _SIGCATCH _WCHAN _NSWAP _CNSWAP _EXIT_SIGNAL _PROCESSOR \
+             _RT_PRIORITY _POLICY _JUNK < /proc/$PID/stat
+        get_policy
+
+        #This  is  the "channel" in which the process is waiting
+        read _WCHAN < /proc/$_PID/wchan
+
+        echo -e "PID: $_PID\t\t$_COMM $APP_POLICY $_PRIORITY ( $_WCHAN )"
 done
