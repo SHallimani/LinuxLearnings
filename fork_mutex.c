@@ -6,7 +6,7 @@
  *                 share a mutex if it's created with the correct options and uses a shared memory segment)
  **/
  
- #include <stdio.h>
+#include <stdio.h>
 #include <assert.h>
 #include <unistd.h>
 #include <stdbool.h>
