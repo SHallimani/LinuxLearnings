@@ -49,3 +49,43 @@ int main() {
    }
    return 0;
 } 
+
+/**
+So, if you want to create a zombie process, after the fork(2), the child-process should exit(), 
+and the parent-process should sleep() before exiting, giving you time to observe the output of ps(1).
+For instance, you can use the code below instead of yours, and use ps(1) while sleep()ing:
+**/
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+
+int main(void)
+{
+    pid_t pid;
+    int status;
+
+    if ((pid = fork()) < 0) {
+        perror("fork");
+        exit(1);
+    }
+
+    /* Child */
+    if (pid == 0)
+        exit(0);
+
+    /* Parent
+     * Gives you time to observe the zombie using ps(1) ... */
+    sleep(100);
+
+    /* ... and after that, parent wait(2)s its child's
+     * exit status, and prints a relevant message. */
+    pid = wait(&status);
+    if (WIFEXITED(status))
+        fprintf(stderr, "\n\t[%d]\tProcess %d exited with status %d.\n",
+                (int) getpid(), pid, WEXITSTATUS(status));
+
+    return 0;
+}
