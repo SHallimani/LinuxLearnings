@@ -1,0 +1,16 @@
+Nested Vectored Interrupt Controller (NVIC)
+
+Depending on the implementation used by the silicon manufacturer, the NVIC can support up to 240 external interrupts 
+with up to 256 different priority levels that can be dynamically reprioritized.
+It supports both level and pulse interrupt sources.
+The processor state is automatically saved by hardware on interrupt entry and is restored on interrupt exit.
+The NVIC also supports tail-chaining of interrupts.
+
+The use of an NVIC in the Cortex-M3 means that the vector table for a Cortex-M3 is very different to previous ARM cores.
+The Cortex-M3 vector table contains the address of the exception handlers and ISR, not instructions as most other ARM cores do.
+The initial stack pointer and the address of the reset handler must be located at 0x0 and 0x4 respectively.
+These values are then loaded into the appropriate CPU registers at reset
+
+Reference:
+https://sites.google.com/site/iprinceps/Home/embedded-system-and-operating-systems/hardware-and-firmware/nested-vectored-interrupt-controller-of-arm-cortex-m3
+https://iitestudent.blogspot.com/2014/03/nested-vectored-interrupt-controller.html
