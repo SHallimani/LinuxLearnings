@@ -8,7 +8,5 @@ iii) Mutex can be acquired by same thread successfully multiple times with condi
     Other thread trying to acquire will block. Whereas in case of semaphore if same process tries to acquire it again it blocks as it can be acquired only once.
 
 Mutex:
-
 Semaphore:
-
 SpinLock:
