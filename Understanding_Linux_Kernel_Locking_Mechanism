@@ -8,8 +8,48 @@ iii) Mutex can be acquired by same thread successfully multiple times with condi
     Other thread trying to acquire will block. Whereas in case of semaphore if same process tries to acquire it again it blocks as it can be acquired only once.
 
 Mutex:
-The mutex subsystem checks and enforces the following rules:
 
+Mutual exclusion (mutex) is the de facto most used locking mechanism. To understand how it
+works, let's see what its structure looks like in include/linux/mutex.h:
+
+struct mutex {
+ /* 1: unlocked, 0: locked, negative: locked, possible waiters */
+ atomic_t count;
+ spinlock_t wait_lock;
+ struct list_head wait_list;
+ [...]
+};
+
+As we have seen in the section wait queue, there is also a list type field in the structure:
+wait_list. The principle of sleeping is the same.
+Contenders are removed from the scheduler run queue and put onto the wait list (wait_list) in a
+sleep state. The kernel then schedules and executes other tasks. When the lock is released, a
+waiter in the wait queue is woken, moved off the wait_list, and scheduled back.
+
+Here is an example of a mutex implementation:
+struct mutex my_mutex;
+mutex_init(&my_mutex);
+/* inside a work or a thread */
+mutex_lock(&my_mutex);
+access_shared_memory();
+mutex_unlock(&my_mutex);
+Please have a look at include/linux/mutex.h in the kernel source to see the strict rules you must
+respect with mutexes. Here are some of them:
+        1/ Only one task can hold the mutex at a time; this is actually not a rule, but a fact
+        2/ Multiple unlocks are not permitted
+        3/ They must be initialized through the API
+        4/ A task holding the mutex may not exit, since the mutex will remain locked, and possible contenders will wait (will sleep) forever
+        5/ Memory areas where held locks reside must not be freed
+        6/ Held mutexes must not be reinitialized
+        7/ Since they involve rescheduling, mutexes may not be used in atomic contexts, such as tasklets and timers
+
+Note:
+As with wait_queue, there is no polling mechanism with mutexes. Every time thamutex_unlock is called on a mutex, the kernel checks for waiters in wait_list. If
+any, one (and only one) of them is awakened and scheduled; they are woken in
+the same order in which they were put to sleep
+
+The mutex subsystem checks and enforces the following rules:
+------------------------------------------------------------
     - Only one task can hold the mutex at a time.
     - Only the owner can unlock the mutex.
     - Multiple unlocks are not permitted.
