@@ -1,0 +1,14 @@
+I find its very important that we are clear about the part of Linux we are discussing this topic - Kernel Space or User Space
+
+i) Scope – The scope of mutex is within a process address space which has created it and is used for synchronization of common resource access.
+            Whereas semaphore can be used across processes space and hence it can be used for interprocess synchronization/signaling.
+            Hence mutex must be released by same thread which is taking it.
+ii) Mutex is lightweight and faster than semaphore (only valid for userspace)
+iii) Mutex can be acquired by same thread successfully multiple times with condition that it should release it same number of times.
+    Other thread trying to acquire will block. Whereas in case of semaphore if same process tries to acquire it again it blocks as it can be acquired only once.
+
+Mutex:
+
+Semaphore:
+
+SpinLock:
