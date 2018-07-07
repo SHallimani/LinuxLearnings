@@ -83,4 +83,58 @@ features that make lock debugging easier and faster:
 -----------------
     SpinLock:
 -----------------
+Like mutex, spinlock is a mutual exclusion mechanism; it only has two states:
+        1/ locked (aquired)
+        2/ unlocked (released)
+Any thread that needs to acquire the spinlock will active loop until the lock is acquired, which
+breaks out of the loop. This is the point where mutex and spinlock differ. Since spinlock heavily
+consumes the CPU while looping, it should be used for very quick acquires, especially when
+time to hold the spinlock is less than time to reschedule. Spinlock should be released as soon as
+the critical task is done
 
+In order to avoid wasting CPU time by scheduling a thread that may probably spin, trying to
+acquire a lock held by another thread moved off the run queue, the kernel disables preemption
+whenever a code holding a spinlock is running. With preemption disabled, we prevent the
+spinlock holder from being moved off the run queue, which could lead waiting processes to spin
+for a long time and consume CPU
+
+As long as one holds a spinlock, other tasks may be spinning while waiting on it. By using
+spinlock, you asserts and guarantee that it will not be held for a long time. You can say it is
+better to spin in a loop, wasting CPU time, than the cost of sleeping your thread, context-shifting
+to another thread or process, and being woken up afterward. Spinning on a processor means no
+other task can run on that processor; it then makes no sense to use spinlock on a single core
+machine. In the best case, you will slow down the system; in the worst case, you will deadlock,
+as with mutexes. For this reason, the kernel just disables preemption in response to the
+spin_lock(spinlock_t *lock) function on single processor. On a single processor (core) system,
+you should use spin_lock_irqsave() and spin_unlock_irqrestore(), which will respectively disable
+the interrupts on the CPU, preventing interrupt concurrency
+
+Since you do not know in advance what system you will write the driver for, it is recommended
+you acquire a spinlock using spin_lock_irqsave(spinlock_t *lock, unsigned long flags), which
+disables interrupts on the current processor (the processor where it is called) before taking the
+spinlock. spin_lock_irqsave internally calls local_irq_save(flags);, an architecture-dependent
+function to save the IRQ status, and preempt_disable() to disable preemption on the relevant
+CPU. You should then release the lock with spin_unlock_irqrestore(), which does the reverse
+operations that we previously enumerated. This is a code that does lock acquire and release. It is
+an IRQ handler, but let's just focus on the lock aspect. We will discuss more about IRQ handlers
+in the next section:
+/* some where */
+spinlock_t my_spinlock;
+spin_lock_init(my_spinlock);
+static irqreturn_t my_irq_handler(int irq, void *data)
+{
+ unsigned long status, flags;
+ spin_lock_irqsave(&my_spinlock, flags);
+ status = access_shared_resources();
+ spin_unlock_irqrestore(&gpio->slock, flags);
+ return IRQ_HANDLED;
+}
+
+-----------------------------
+   Spinlock versus mutexes
+-----------------------------
+
+Used for concurrency in the kernel, spinlocks and mutexes each have their own objectives:
+        1/ Mutexes protect the process's critical resource, whereas spinlock protects the IRQ handler's critical sections
+        2/ Mutexes put contenders to sleep until the lock is acquired, whereas spinlocks infinitely spin in a loop (consuming CPU) until the lock is acquired
+        3/ Because of the previous point, you can't hold spinlock for a long time, since waiters will waste CPU time waiting for the lock, whereas a mutex can be held as long as the resource needs to be protected, since contenders are put to sleep in a wait queue
