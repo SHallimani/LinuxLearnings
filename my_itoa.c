@@ -34,8 +34,24 @@ char *my_itoa(int num) {
         return buf;
 }
 
+char *int_to_ascii(int num, int base) {
+        static char buf[16];
+
+        char *ptr;
+
+        ptr = &buf[sizeof(buf) - 1];
+
+        do {
+                *--ptr="0123456789"[num%base];
+                num /= base;
+        }while(num);
+
+        return ptr;
+}
+
 int main() {
         int num = 1567098760;
         printf("%d - %s\n", num, my_itoa(num));
+        printf("%s\n", int_to_ascii(12345, 10));
         return 0;
 }
