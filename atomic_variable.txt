@@ -1,0 +1,12 @@
+How does the atomic and non-atomic variable differs technical point of view
+
+An atomic function performs a read-modify-write atomic operation on one 32-bit or 64-bit variables
+
+When we declare any variable as atomic, the operation that we are going to perform are executed in atomic mode (without preempting the current
+operations on the atomic variable) internally it uses the LDREX and STREX instructions and perform add/sub/mux instruction on the atomic
+variables
+
+The operation is atomic in the sense that it is guaranteed to be performed without interference from other threads.
+So in other words, no other thread can access this address until the operation is complete
+
+
