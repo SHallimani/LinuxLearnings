@@ -3,10 +3,34 @@ How does the atomic and non-atomic variable differs technical point of view
 An atomic function performs a read-modify-write atomic operation on one 32-bit or 64-bit variables
 
 When we declare any variable as atomic, the operation that we are going to perform are executed in atomic mode (without preempting the current
-operations on the atomic variable) internally it uses the LDREX and STREX instructions and perform add/sub/mux instruction on the atomic
-variables
+operations on the atomic variable) internally it uses the LDREX, MODIFY(Add/Sub/Mux) and STREX instructions
 
 The operation is atomic in the sense that it is guaranteed to be performed without interference from other threads.
 So in other words, no other thread can access this address until the operation is complete
 
 
+Lets consider below example code for our better understanding.
+
+
+void IncrementLoop() {
+    unsigned int counter;
+    unsigned int loop;
+    for(loop = 0; loop < 20000000; loop++) {
+        counter ++;
+    }
+    
+Lets consider from the above example, how time the cpu will consume to compute and generate the output and what can be done to optimize the above code to work faster?
+
+This can be splitted to run differnt CPU cores, if H/W support multi core support.
+But there can be race condition on incrementing the variable, two cpu cores executes the code independently, so to avoid this race condition we use different instruction set LDREX-MODIFY-STREX (Read-Modify-Store instruction exclusively) in a single step
+    - We call this as atomic operation
+    - We’re saying: “Do this, and don’t get interrupted while doing this.”
+    
+“Atomic” in this context means “all or nothing”
+    — either we succeed in completing the operation with no interruptions or we fail to even begin the operation (because someone else was
+doing an atomic operation)
+    — We really mean “atomic” AND “isolated” from other threads.
+
+x86 provides a “lock” prefix that tells the hardware:
+    — don’t let anyone read/write the value until I’m done with it
+    — Not the default case (because it is slow!)
