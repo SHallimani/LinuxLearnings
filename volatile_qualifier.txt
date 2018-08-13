@@ -1,0 +1,44 @@
+The compiler is free to optimize reads and writes to global or shared memory (example: By caching global reads into registers or L1 cache)
+These optimizations can be disabled using the volatile keyword:
+  If a variable located in global or shared memory is declared as volatile, the compiler assumes that its value can be changed or
+  used at any time by another thread and therefore any reference to this variable compiles to an actual memory read or write instruction
+  
+The volatile keyword is intended to prevent the compiler from applying any optimizations on objects that can change in ways
+and that cannot be determined by the compiler
+
+Objects declared as volatile are omitted from optimization because their values can be changed by code outside the scope of current code
+at any time. The system always reads the current value of a volatile object from the memory location rather than keeping its
+value in temporary register at the point it is requested, even if a previous instruction asked for a value from the same object
+
+Example:
+
+1/ Global value object updated/modified from the Interrupt Service Routine
+2/ Peripheral Registers accessing (the device I/O status can be changed asynchronously @any point of time)
+
+Example Program:
+
+#define EXIT_CODE_CHECK 0
+unsigned short *IOReg = (unsigned short *)0x1234; //default data 0xFF
+
+int main() {
+  
+  do {
+     ;
+  }while(*IOReg != EXIT_CODE_CHECK); //if IOData is 0, exit the loop and perform other task and here we continously checking and validating
+
+}
+
+From the above code/logic the compiler will start optimising the code and reads the value one time and it caches the data in to the CPU local
+local registers (L1 cache or etc...)it will execute in tight loop, But here the data can be changed @any point of time ASynchronously.
+To disable compiler optimization declare the variable as volatile
+
+#define EXIT_CODE_CHECK 0
+volatile unsigned short *IOReg = (unsigned short *)0x1234; //default data 0xFF
+
+int main() {
+  
+  do {
+     ;
+  }while(*IOReg != EXIT_CODE_CHECK); //if IOData is 0, exit the loop and perform other task and here we continously checking and validating
+
+}
