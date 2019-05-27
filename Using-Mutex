@@ -44,3 +44,58 @@ semop(2) SEM_UNDO flag) if the owner process is abruptly killed (always possible
 mutex—the winner must unlock it (we shall cover how the developer can ensure this later)
 
 
+Querys - 1: Refer the Following Problem for better understanding
+-----------
+
+I have the following problem with the PTHREAD_MUTEX_RECURSIVE: it blocks when the mutex is locked from another thread;
+
+pthread_mutex_t m;
+pthread_mutexattr_t ma;
+
+void* exec_th(void* arg) {
+    printf("THREAD %p before LOCK\n", pthread_self());
+
+    //second mutex lock
+    pthread_mutex_lock(&m);
+    printf("THREAD %p after LOCK\n", pthread_self());
+
+    pthread_mutex_unlock(&m);
+    printf("THREAD %p after UNLOCK\n", pthread_self());
+
+    return (void*)0;
+}
+
+int main() {
+    pthread_mutexattr_init(&ma);
+    pthread_mutexattr_settype(&ma, PTHREAD_MUTEX_RECURSIVE);
+    pthread_mutex_init(&m, &ma);
+
+    // first mutex lock
+    pthread_mutex_lock(&m);
+
+    // create a thread that will call the same mutex
+    pthread_t t;
+    pthread_create(&t, NULL, exec_th, NULL);
+
+    sleep(1); //just to see the console
+
+    pthread_mutex_unlock(&m);
+}
+
+The OpenGroup states:
+
+    A thread attempting to relock this mutex without first unlocking it will succeed in locking the mutex. The relocking deadlock which can occur with mutexes of type PTHREAD_MUTEX_NORMAL cannot occur with this type of mutex
+
+Still, the above code generates the same behaviour for PTHREAD_MUTEX_RECURSIVE and PTHREAD_MUTEX_NORMAL:
+
+    only before LOCK is printed before the sleep() in main();
+    the thread locks the mutex after it is released by the main();
+
+Solution:
+---------
+
+it blocks when the mutex is locked from another thread
+If the mutex is recursive and the thread that calls pthread_mutex_lock already holds that mutex, only then it'll return immediately. In your case, the main thread locks the mutex and a different thread attempts to acquire that mutex which gets blocked because it's held by a different. This is normal behaviour.
+If any thread can unlock any (recursive) mutex held by other thread(s), then recursive mutexes would be useless!
+
+
