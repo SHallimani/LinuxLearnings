@@ -99,3 +99,5 @@ If the mutex is recursive and the thread that calls pthread_mutex_lock already h
 If any thread can unlock any (recursive) mutex held by other thread(s), then recursive mutexes would be useless!
 
 
+Linux mutex priority inherit:
+https://www.ibm.com/support/knowledgecenter/ssw_aix_72/com.ibm.aix.genprogc/synch_schedbmort.htm
