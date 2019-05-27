@@ -1,0 +1,46 @@
+The mutex lock
+The word mutex is really an abbreviation for mutual exclusion; to the mutual
+exclusion of all other (loser) threads, one thread—the winner—holds (or owns) the
+mutex lock. Only when it is unlocked can another thread take the lock
+
+A mutex is a mutual exclusion lock. Only one thread can hold the lock.
+
+Mutexes are used to protect data or other resources from concurrent access. A mutex has attributes, which specify the characteristics of the mutex
+
+
+Mutex attributes:
+----------------
+
+The following mutex attributes are defined:
+Attribute 	Description
+Protocol 	Specifies the protocol used to prevent priority inversions for a mutex. This attribute depends on either the priority inheritance or the priority protection POSIX option.
+Process-shared 	Specifies the process sharing of a mutex. This attribute depends on the process sharing POSIX option.
+
+
+Types of Mutexes:
+----------------
+
+The type of mutex determines how the mutex behaves when it is operated on. The following types of mutexes exist:
+
+PTHREAD_MUTEX_DEFAULT or PTHREAD_MUTEX_NORMAL
+    Results in a deadlock if the same pthread tries to lock it a second time using the pthread_mutex_lock subroutine without first unlocking it. This is the default type.
+PTHREAD_MUTEX_ERRORCHECK
+    Avoids deadlocks by returning a non-zero value if the same thread attempts to lock the same mutex more than once without first unlocking the mutex.
+PTHREAD_MUTEX_RECURSIVE
+    Allows the same pthread to recursively lock the mutex using the pthread_mutex_lock subroutine without resulting in a deadlock or getting a non-zero return value from pthread_mutex_lock. The same pthread has to call the pthread_mutex_unlock subroutine the same number of times as it called pthread_mutex_lock subroutine in order to unlock the mutex for other pthreads to use.
+
+
+An FAQ: What really is the difference between the semaphore and the mutex lock? Firstly, the semaphore can be used in two
+ways—one, as a counter (with the counting semaphore object), and two (relevant to us here), essentially as a mutex lock—the binary
+semaphore.
+
+Between the binary semaphore and the mutex lock, there exists two primary differences: one, the semaphore is meant to be used to
+synchronize between processes and not the threads internal to a single process (it is indeed a well-known IPC facility); the mutex
+lock is meant to synchronize between the threads of a given (single) process. (Having said that, it is possible to create a process-shared
+mutex, but it's never the default).
+
+Two, the SysV IPC implementation of the semaphore provides the possibility of having the kernel unlock the semaphore (via the
+semop(2) SEM_UNDO flag) if the owner process is abruptly killed (always possible via signal #9); no such possibility even exists for the
+mutex—the winner must unlock it (we shall cover how the developer can ensure this later)
+
+
