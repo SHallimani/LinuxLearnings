@@ -43,6 +43,21 @@ Two, the SysV IPC implementation of the semaphore provides the possibility of ha
 semop(2) SEM_UNDO flag) if the owner process is abruptly killed (always possible via signal #9); no such possibility even exists for the
 mutex—the winner must unlock it (we shall cover how the developer can ensure this later)
 
+Reader-Writer Mutex Lock:
+------------------------
+Notice that it's a new type of lock altogether: the pthread_wrlock_t
+
+If a thread obtains a read lock for itself, the key point is this: the implementation now trusts that this thread will only read and never write; 
+thus, no actual locking is done and the API will just return success! This way, readers actually run in parallel, thus
+keeping performance high; there is no safety issue or race, as they guarantee they will only read
+
+However, the moment a thread wishes to write data, it must obtain a write lock: when this happens, normal locking semantics apply
+The writer thread must now wait for all readers to perform the unlock, and then the writer gets the write lock
+and proceeds. While it's within the critical section, no thread—reader nor writer—will
+be able to intervene; they will have to, as is usual, block (wait) upon the writer's unlock.
+
+
+
 
 Querys - 1: Refer the Following Problem for better understanding
 -----------
